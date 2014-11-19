@@ -1,0 +1,32 @@
+<ion-view title="NFL Week {{currentWeek.weekNumber}}" hide-back-button="true">
+    <ion-nav-buttons side="left">
+        <button class="button button-icon" ng-click="toggleSideMenu()">
+            <i class="icon ion-navicon"></i>
+        </button>
+    </ion-nav-buttons>
+    <ion-content>
+        <div class="card" ng-repeat="game in currentWeek.games">
+            <div class="item item-divider" ng-if="game.showDateHeader">
+                {{game.date | amDateFormat: "ddd MMM D - h:mm A"}}
+            </div>
+            <div class="item padding">
+                <div class="row">
+                    <div class="col col-75">
+                        {{getTeamName(game.awayIndex)}}
+                    </div>
+                    <div class="col" ng-hide="game.bovadaLvOverUnder == -1000">
+                        {{ game.bovadaLvOverUnder }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-75">
+                        {{getTeamName(game.homeIndex)}}
+                    </div>
+                    <div class="col" ng-hide="game.bovadaLvLine == -1000">
+                        {{ game.bovadaLvLine | line }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ion-content>
+</ion-view>
