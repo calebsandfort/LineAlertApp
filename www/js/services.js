@@ -74,6 +74,51 @@ lineAlertAppServices.factory('UserService', ['$q', 'UserApiService',
         };
     }]);
 
+lineAlertAppServices.factory('NbaApiService', ['Restangular',
+    function (Restangular) {
+        return Restangular.service('NbaApi');
+    }]);
+
+lineAlertAppServices.factory('NbaService', ['$q', 'NbaApiService',
+    function ($q, NbaApiService) {
+        return {
+            getGames: function () {
+                var q = $q.defer();
+
+                var nbaGamesString = window.localStorage['lineAlertApp.nbaGames'];
+                var performGetList = true;
+
+                if(nbaGamesString) {
+                    var nbaGamesFromStorage = angular.fromJson(userString);
+
+                    performGetList = false;
+                    q.resolve(nbaGamesFromStorage);
+                }
+
+                if(performGetList) {
+                    NbaApiService.getList().then(function (games) {
+                        var currentHeaderDate = new Date("1/1/1990").getTime();
+                        for (var i = 0; i < games.length; i++) {
+                            games[i].date = new Date(games[i].date);
+                            games[i].showDateHeader = games[i].date.getTime() > currentHeaderDate;
+                            if (games[i].showDateHeader) {
+                                currentHeaderDate = games[i].date.getTime()
+                            }
+                        }
+
+                        window.localStorage['lineAlertApp.nbaGames'] = angular.toJson(games);
+
+                        q.resolve(games);
+                    }, function (e) {
+                        q.reject(e);
+                    });
+                }
+
+                return q.promise;
+            }
+        };
+    }]);
+
 lineAlertAppServices.factory('NflApiService', ['$resource',
     function ($resource) {
         return $resource('http://guerillalogistics.com/LineAlertApp/api/NflApi', {}, {

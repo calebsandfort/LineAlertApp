@@ -17,6 +17,11 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
                 templateUrl: "partials/nfl.html",
                 controller: "nflDynamicController"
             })
+            .state('nba', {
+                url: '/nba',
+                templateUrl: "partials/nba.html",
+                controller: "nbaController"
+            })
 
         $urlRouterProvider.otherwise("/nfl");
 

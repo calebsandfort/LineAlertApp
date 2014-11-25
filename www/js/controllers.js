@@ -51,6 +51,55 @@ lineAlertAppControllers.controller('landingController', function ($scope, $locat
 
 });
 
+lineAlertAppControllers.controller('nbaController', function ($scope, $filter, NbaService) {
+        $scope.teams = new Array();
+        $scope.games = new Array();
+
+        //region Teams
+        $scope.teams.push({identifier: 11, name: "Atlanta Hawks"});
+        $scope.teams.push({identifier: 1, name: "Boston Celtics"});
+        $scope.teams.push({identifier: 2, name: "Brooklyn Nets"});
+        $scope.teams.push({identifier: 12, name: "Charlotte Bobcats"});
+        $scope.teams.push({identifier: 6, name: "Chicago Bulls"});
+        $scope.teams.push({identifier: 7, name: "Cleveland Cavaliers"});
+        $scope.teams.push({identifier: 16, name: "Dallas Mavericks"});
+        $scope.teams.push({identifier: 21, name: "Denver Nuggets"});
+        $scope.teams.push({identifier: 8, name: "Detroit Pistons"});
+        $scope.teams.push({identifier: 26, name: "Golden State Warriors"});
+        $scope.teams.push({identifier: 17, name: "Houston Rockets"});
+        $scope.teams.push({identifier: 9, name: "Indiana Pacers"});
+        $scope.teams.push({identifier: 27, name: "Los Angeles Clippers"});
+        $scope.teams.push({identifier: 28, name: "Los Angeles Lakers"});
+        $scope.teams.push({identifier: 18, name: "Memphis Grizzlies"});
+        $scope.teams.push({identifier: 13, name: "Miami Heat"});
+        $scope.teams.push({identifier: 10, name: "Milwaukee Bucks"});
+        $scope.teams.push({identifier: 22, name: "Minnesota Timberwolves"});
+        $scope.teams.push({identifier: 19, name: "New Orleans Pelicans"});
+        $scope.teams.push({identifier: 3, name: "New York Knicks"});
+        $scope.teams.push({identifier: 24, name: "Oklahoma City Thunder"});
+        $scope.teams.push({identifier: 14, name: "Orlando Magic"});
+        $scope.teams.push({identifier: 4, name: "Philadelphia 76ers"});
+        $scope.teams.push({identifier: 29, name: "Phoenix Suns"});
+        $scope.teams.push({identifier: 23, name: "Portland Trail Blazers"});
+        $scope.teams.push({identifier: 30, name: "Sacramento Kings"});
+        $scope.teams.push({identifier: 20, name: "San Antonio Spurs"});
+        $scope.teams.push({identifier: 5, name: "Toronto Raptors"});
+        $scope.teams.push({identifier: 25, name: "Utah Jazz"});
+        $scope.teams.push({identifier: 15, name: "Washington Wizards"});
+        //endregion
+
+        NbaService.getGames().then(function (games) {
+                    $scope.games = games;
+            },
+            function (e) {
+                    alert("Error: " + JSON.stringify(e));
+            });
+
+        $scope.getTeamName = function(index){
+                return $scope.teams[index].name;
+        }
+});
+
 lineAlertAppControllers.controller('nflDynamicController', function ($scope, $filter, NflService) {
         $scope.teams = new Array();
         $scope.currentWeek = {};
