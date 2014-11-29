@@ -81,24 +81,43 @@ lineAlertAppServices.factory('NbaApiService', ['Restangular',
 
 lineAlertAppServices.factory('NbaService', ['$q', 'NbaApiService',
     function ($q, NbaApiService) {
+        var gamesMaster = new Array();
+        var gamesMasterSet = false;
+
         return {
-            getGames: function () {
+            getGame: function (index) {
+                if(gamesMasterSet){
+                    return gamesMaster[index];
+                }
+                else{
+                    return null;
+                }
+            },
+            getGames: function (teams) {
                 var q = $q.defer();
+
+                if(gamesMasterSet){
+                    q.resolve(gamesMaster);
+                }
 
                 var nbaGamesString = window.localStorage['lineAlertApp.nbaGames'];
                 var performGetList = true;
 
                 if(nbaGamesString) {
-                    var nbaGamesFromStorage = angular.fromJson(userString);
+                    var nbaGamesFromStorage = angular.fromJson(nbaGamesString);
 
                     performGetList = false;
-                    q.resolve(nbaGamesFromStorage);
+                    gamesMaster = nbaGamesFromStorage;
+                    gamesMasterSet = true;
+                    q.resolve(gamesMaster);
                 }
 
                 if(performGetList) {
                     NbaApiService.getList().then(function (games) {
                         var currentHeaderDate = new Date("1/1/1990").getTime();
                         for (var i = 0; i < games.length; i++) {
+                            games[i].awayName = teams[games[i].awayIndex].name;
+                            games[i].homeName = teams[games[i].homeIndex].name;
                             games[i].date = new Date(games[i].date);
                             games[i].showDateHeader = games[i].date.getTime() > currentHeaderDate;
                             if (games[i].showDateHeader) {
@@ -108,7 +127,10 @@ lineAlertAppServices.factory('NbaService', ['$q', 'NbaApiService',
 
                         window.localStorage['lineAlertApp.nbaGames'] = angular.toJson(games);
 
-                        q.resolve(games);
+                        gamesMaster = games;
+                        gamesMasterSet = true;
+
+                        q.resolve(gamesMaster);
                     }, function (e) {
                         q.reject(e);
                     });

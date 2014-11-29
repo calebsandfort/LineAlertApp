@@ -7,6 +7,58 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
     'lineAlertAppFilters', 'ngCordova.plugins.push', 'ngCordova.plugins.device', 'restangular'])
     .config(function($stateProvider, $urlRouterProvider, RestangularProvider) {
         $stateProvider
+            .state('app', {
+                url: "/app",
+                abstract: true,
+                templateUrl: "templates/main.html"
+            })
+            .state('app.nba', {
+                abstract: true,
+                url: "/nba",
+                views: {
+                    'mainContent' :{
+                        template: '<ion-nav-view></ion-nav-view>'
+                    }
+                }
+            })
+            .state('app.nba.games', {
+                url: "",
+                templateUrl: "partials/nba.html",
+                controller: "nbaController"
+            })
+            .state('app.nba.game', {
+                url: "/:index",
+                templateUrl: "partials/game.html",
+                controller: "gameController",
+                resolve: {
+                    game: function($stateParams, NbaService) {
+                        return NbaService.getGame($stateParams.index)
+                    }
+                }
+            })
+            .state('app.nfl', {
+                abstract: true,
+                url: "/nfl",
+                views: {
+                    'mainContent' :{
+                        template: '<ion-nav-view></ion-nav-view>'
+                    }
+                }
+            })
+            .state('app.nfl.games', {
+                url: "",
+                templateUrl: "partials/nfl.html",
+                controller: "nflDynamicController"
+            })
+            .state('app.nfl.game', {
+                url: "/:index",
+                templateUrl: "partials/game.html",
+                controller: "gameController"
+            })
+
+        $urlRouterProvider.otherwise("/app/nba");
+
+        /*$stateProvider
             .state('landing', {
                 url: '/landing',
                 templateUrl: "partials/landing.html",
@@ -21,9 +73,9 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
                 url: '/nba',
                 templateUrl: "partials/nba.html",
                 controller: "nbaController"
-            })
+            });
 
-        $urlRouterProvider.otherwise("/nfl");
+        $urlRouterProvider.otherwise("/nfl");*/
 
         RestangularProvider.setBaseUrl('http://guerillalogistics.com/LineAlertApp/api');
     })

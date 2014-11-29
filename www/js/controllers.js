@@ -88,7 +88,7 @@ lineAlertAppControllers.controller('nbaController', function ($scope, $filter, N
         $scope.teams.push({identifier: 15, name: "Washington Wizards"});
         //endregion
 
-        NbaService.getGames().then(function (games) {
+        NbaService.getGames($scope.teams).then(function (games) {
                     $scope.games = games;
             },
             function (e) {
@@ -98,6 +98,10 @@ lineAlertAppControllers.controller('nbaController', function ($scope, $filter, N
         $scope.getTeamName = function(index){
                 return $scope.teams[index].name;
         }
+});
+
+lineAlertAppControllers.controller('gameController', function ($scope, game) {
+        $scope.game = game;
 });
 
 lineAlertAppControllers.controller('nflDynamicController', function ($scope, $filter, NflService) {
