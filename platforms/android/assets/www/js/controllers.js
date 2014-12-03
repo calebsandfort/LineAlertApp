@@ -51,7 +51,7 @@ lineAlertAppControllers.controller('landingController', function ($scope, $locat
 
 });
 
-lineAlertAppControllers.controller('nbaController', function ($scope, $filter, NbaService) {
+lineAlertAppControllers.controller('nbaController', function ($scope, $filter, $ionicLoading, NbaService) {
         $scope.teams = new Array();
         $scope.games = new Array();
 
@@ -88,7 +88,7 @@ lineAlertAppControllers.controller('nbaController', function ($scope, $filter, N
         $scope.teams.push({identifier: 15, name: "Washington Wizards"});
         //endregion
 
-        NbaService.getGames($scope.teams).then(function (games) {
+        NbaService.getGames($scope.teams, false, $ionicLoading).then(function (games) {
                     $scope.games = games;
             },
             function (e) {
@@ -98,13 +98,22 @@ lineAlertAppControllers.controller('nbaController', function ($scope, $filter, N
         $scope.getTeamName = function(index){
                 return $scope.teams[index].name;
         }
+
+        $scope.refreshGames = function(){
+                NbaService.getGames($scope.teams, true, $ionicLoading).then(function (games) {
+                            $scope.games = games;
+                    },
+                    function (e) {
+                            alert("Error: " + JSON.stringify(e));
+                    });
+        }
 });
 
 lineAlertAppControllers.controller('gameController', function ($scope, game) {
         $scope.game = game;
 });
 
-lineAlertAppControllers.controller('nflDynamicController', function ($scope, $filter, NflService) {
+lineAlertAppControllers.controller('nflController', function ($scope, $filter, $ionicLoading, NflService) {
         $scope.teams = new Array();
         $scope.currentWeek = {};
 
@@ -145,7 +154,12 @@ lineAlertAppControllers.controller('nflDynamicController', function ($scope, $fi
         //endregion
         //endregion
 
-        $scope.currentWeek = NflService.getCurrentNflWeek();
+        NflService.getGames($scope.teams, false, $ionicLoading).then(function (week) {
+                    $scope.week = week;
+            },
+            function (e) {
+                    alert("Error: " + JSON.stringify(e));
+            });
 
         $scope.getTeamName = function(index){
                 return $scope.teams[index].name;
@@ -159,6 +173,15 @@ lineAlertAppControllers.controller('nflDynamicController', function ($scope, $fi
                         $scope.$apply();
                 }
         });
+
+        $scope.refreshGames = function(){
+                NflService.getGames($scope.teams, true, $ionicLoading).then(function (week) {
+                            $scope.week = week;
+                    },
+                    function (e) {
+                            alert("Error: " + JSON.stringify(e));
+                    });
+        }
 
         /*$scope.filterTest = function(){
                 var game = $filter('filter')($scope.currentWeek.games, {identifier: 162});

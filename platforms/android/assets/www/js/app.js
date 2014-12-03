@@ -48,12 +48,17 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
             .state('app.nfl.games', {
                 url: "",
                 templateUrl: "partials/nfl.html",
-                controller: "nflDynamicController"
+                controller: "nflController"
             })
             .state('app.nfl.game', {
                 url: "/:index",
                 templateUrl: "partials/game.html",
-                controller: "gameController"
+                controller: "gameController",
+                resolve: {
+                    game: function($stateParams, NflService) {
+                        return NflService.getGame($stateParams.index)
+                    }
+                }
             })
 
         $urlRouterProvider.otherwise("/app/nba");

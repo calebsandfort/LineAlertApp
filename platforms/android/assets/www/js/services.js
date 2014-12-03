@@ -93,26 +93,38 @@ lineAlertAppServices.factory('NbaService', ['$q', 'NbaApiService',
                     return null;
                 }
             },
-            getGames: function (teams) {
+            getGames: function (teams, refresh, $ionicLoading) {
                 var q = $q.defer();
+
+                if(refresh){
+                    gamesMaster = new Array();
+                    gamesMasterSet = false;
+                }
 
                 if(gamesMasterSet){
                     q.resolve(gamesMaster);
                 }
 
-                var nbaGamesString = window.localStorage['lineAlertApp.nbaGames'];
                 var performGetList = true;
 
-                if(nbaGamesString) {
-                    var nbaGamesFromStorage = angular.fromJson(nbaGamesString);
+                if(!refresh) {
+                    var nbaGamesString = window.localStorage['lineAlertApp.nbaGames'];
 
-                    performGetList = false;
-                    gamesMaster = nbaGamesFromStorage;
-                    gamesMasterSet = true;
-                    q.resolve(gamesMaster);
+                    if (nbaGamesString) {
+                        var nbaGamesFromStorage = angular.fromJson(nbaGamesString);
+
+                        performGetList = false;
+                        gamesMaster = nbaGamesFromStorage;
+                        gamesMasterSet = true;
+                        q.resolve(gamesMaster);
+                    }
                 }
 
                 if(performGetList) {
+                    $ionicLoading.show({
+                        template: 'Loading...'
+                    });
+
                     NbaApiService.getList().then(function (games) {
                         var currentHeaderDate = new Date("1/1/1990").getTime();
                         for (var i = 0; i < games.length; i++) {
@@ -130,6 +142,7 @@ lineAlertAppServices.factory('NbaService', ['$q', 'NbaApiService',
                         gamesMaster = games;
                         gamesMasterSet = true;
 
+                        $ionicLoading.hide();
                         q.resolve(gamesMaster);
                     }, function (e) {
                         q.reject(e);
@@ -141,45 +154,63 @@ lineAlertAppServices.factory('NbaService', ['$q', 'NbaApiService',
         };
     }]);
 
-lineAlertAppServices.factory('NflApiService', ['$resource',
-    function ($resource) {
-        return $resource('http://guerillalogistics.com/LineAlertApp/api/NflApi', {}, {
-            getCurrentNflWeek: {method: 'GET', params: {currentNflWeek: true}, isArray: false}
-        });
+lineAlertAppServices.factory('NflApiService', ['Restangular',
+    function (Restangular) {
+        return Restangular.service('NflApi');
     }]);
 
-lineAlertAppServices.factory('NflService', ['NflApiService',
-    function (NflApiService) {
+
+lineAlertAppServices.factory('NflService', ['$q', 'NflApiService', 'Restangular',
+    function ($q, NflApiService, Restangular) {
+        var weekMaster = {};
+        var weekMasterSet = false;
+
         return{
-            getCurrentNflWeek: function(){
-                var nflSettingsString = window.localStorage['lineAlertApp.nflSettings'];
-                var nflSettings;
-                var getFromApi = false;
-                var day = moment().day();
-                var saveToStorage = false;
-
-                if(nflSettingsString){
-                    nflSettings = angular.fromJson(nflSettingsString);
-
-                    if(day == 2 && !nflSettings.tuesdayResetPerformed){
-                        nflSettings.tuesdayResetPerformed = true;
-                        getFromApi = true;
-                    }
-                    else if(day != 2 && nflSettings.tuesdayResetPerformed){
-                        nflSettings.tuesdayResetPerformed = false;
-                        saveToStorage = true;
-                    }
+            getGame: function (index) {
+                if(weekMasterSet){
+                    return weekMaster.games[index];
                 }
                 else{
-                    nflSettings = {tuesdayResetPerformed: day == 2};
-                    getFromApi = true;
+                    return null;
+                }
+            },
+            getGames: function (teams, refresh, $ionicLoading) {
+                var q = $q.defer();
+
+                if(refresh){
+                    weekMaster = {};
+                    weekMasterSet = false;
                 }
 
-                if(getFromApi){
-                    return NflApiService.getCurrentNflWeek(function (data) {
-                        var currentHeaderDate = new Date("1/1/1990").getTime();
+                if(weekMasterSet){
+                    q.resolve(weekMaster);
+                }
 
+                var performGetList = true;
+
+                if(!refresh) {
+                    var nflWeekString = window.localStorage['lineAlertApp.nflWeek'];
+
+                    if (nflWeekString) {
+                        var nflWeekFromStorage = angular.fromJson(nflWeekString);
+
+                        performGetList = false;
+                        weekMaster = nflWeekFromStorage;
+                        weekMasterSet = true;
+                        q.resolve(weekMaster);
+                    }
+                }
+
+                if(performGetList) {
+                    $ionicLoading.show({
+                        template: 'Loading...'
+                    });
+
+                    Restangular.all("NflApi").customGET("Get", {}).then(function (data) {
+                        var currentHeaderDate = new Date("1/1/1990").getTime();
                         for (var i = 0; i < data.games.length; i++) {
+                            data.games[i].awayName = teams[data.games[i].awayIndex].name;
+                            data.games[i].homeName = teams[data.games[i].homeIndex].name;
                             data.games[i].date = new Date(data.games[i].date);
                             data.games[i].showDateHeader = data.games[i].date.getTime() > currentHeaderDate;
                             if (data.games[i].showDateHeader) {
@@ -187,23 +218,23 @@ lineAlertAppServices.factory('NflService', ['NflApiService',
                             }
                         }
 
-                        nflSettings.currentWeek = {
+                        weekMaster = {
                             weekNumber: data.weekNumber,
                             games: data.games
                         }
 
-                        window.localStorage['lineAlertApp.nflSettings'] = angular.toJson(nflSettings);
-                    }, function(e){
-                        alert("NFL Error: " + JSON.stringify(e));
+                        window.localStorage['lineAlertApp.nflWeek'] = angular.toJson(weekMaster);
+
+                        weekMasterSet = true;
+
+                        $ionicLoading.hide();
+                        q.resolve(weekMaster);
+                    }, function (e) {
+                        q.reject(e);
                     });
                 }
-                else{
-                    if(saveToStorage){
-                        window.localStorage['lineAlertApp.nflSettings'] = angular.toJson(nflSettings);
-                    }
 
-                    return nflSettings.currentWeek;
-                }
+                return q.promise;
             }
         }
     }]);
