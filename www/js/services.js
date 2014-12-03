@@ -79,12 +79,15 @@ lineAlertAppServices.factory('NbaApiService', ['Restangular',
         return Restangular.service('NbaApi');
     }]);
 
-lineAlertAppServices.factory('NbaService', ['$q', 'NbaApiService',
-    function ($q, NbaApiService) {
+lineAlertAppServices.factory('NbaService', ['$q', '$filter', 'NbaApiService', 'NbaTeams',
+    function ($q, $filter, NbaApiService, NbaTeams) {
         var gamesMaster = new Array();
         var gamesMasterSet = false;
 
         return {
+            updateLocalStorage: function(){
+                window.localStorage['lineAlertApp.nbaGames'] = angular.toJson(gamesMaster);
+            },
             getGame: function (index) {
                 if(gamesMasterSet){
                     return gamesMaster[index];
@@ -93,11 +96,10 @@ lineAlertAppServices.factory('NbaService', ['$q', 'NbaApiService',
                     return null;
                 }
             },
-            getGames: function (teams, refresh, $ionicLoading) {
+            getGames: function (refresh, $ionicLoading) {
                 var q = $q.defer();
 
                 if(refresh){
-                    gamesMaster = new Array();
                     gamesMasterSet = false;
                 }
 
@@ -128,12 +130,27 @@ lineAlertAppServices.factory('NbaService', ['$q', 'NbaApiService',
 
                     NbaApiService.getList().then(function (games) {
                         var currentHeaderDate = new Date("1/1/1990").getTime();
+                        var sync = gamesMaster.length > 0;
+
                         for (var i = 0; i < games.length; i++) {
-                            games[i].awayName = teams[games[i].awayIndex].name;
-                            games[i].homeName = teams[games[i].homeIndex].name;
+                            games[i].awayName = NbaTeams[games[i].awayIndex].name;
+                            games[i].homeName = NbaTeams[games[i].homeIndex].name;
                             games[i].date = new Date(games[i].date);
                             games[i].showDateHeader = games[i].date.getTime() > currentHeaderDate;
-                            games[i].follow = false;
+
+                            if(sync){
+                                var g = $filter('filter')(gamesMaster, {identifier: games[i].identifier});
+                                if(g.length > 0){
+                                    games[i].follow = g[0].follow;
+                                }
+                                else{
+                                    games[i].follow = false;
+                                }
+                            }
+                            else{
+                                games[i].follow = false;
+                            }
+
                             if (games[i].showDateHeader) {
                                 currentHeaderDate = games[i].date.getTime()
                             }
@@ -161,13 +178,18 @@ lineAlertAppServices.factory('NflApiService', ['Restangular',
         return Restangular.service('NflApi');
     }]);
 
-
-lineAlertAppServices.factory('NflService', ['$q', 'NflApiService', 'Restangular',
-    function ($q, NflApiService, Restangular) {
-        var weekMaster = {};
+lineAlertAppServices.factory('NflService', ['$q', '$filter', 'NflApiService', 'Restangular', 'NflTeams',
+    function ($q, $filter, NflApiService, Restangular, NflTeams) {
+        var weekMaster = {
+            weekNumber: 0,
+            games: new Array()
+        };
         var weekMasterSet = false;
 
         return{
+            updateLocalStorage: function(){
+                window.localStorage['lineAlertApp.nflWeek'] = angular.toJson(weekMaster);
+            },
             getGame: function (index) {
                 if(weekMasterSet){
                     return weekMaster.games[index];
@@ -176,11 +198,10 @@ lineAlertAppServices.factory('NflService', ['$q', 'NflApiService', 'Restangular'
                     return null;
                 }
             },
-            getGames: function (teams, refresh, $ionicLoading) {
+            getGames: function (refresh, $ionicLoading) {
                 var q = $q.defer();
 
                 if(refresh){
-                    weekMaster = {};
                     weekMasterSet = false;
                 }
 
@@ -211,20 +232,34 @@ lineAlertAppServices.factory('NflService', ['$q', 'NflApiService', 'Restangular'
 
                     Restangular.all("NflApi").customGET("Get", {}).then(function (data) {
                         var currentHeaderDate = new Date("1/1/1990").getTime();
+                        var sync = weekMaster.games.length > 0;
+
                         for (var i = 0; i < data.games.length; i++) {
-                            data.games[i].awayName = teams[data.games[i].awayIndex].name;
-                            data.games[i].homeName = teams[data.games[i].homeIndex].name;
+                            data.games[i].awayName = NflTeams[data.games[i].awayIndex].name;
+                            data.games[i].homeName = NflTeams[data.games[i].homeIndex].name;
                             data.games[i].date = new Date(data.games[i].date);
                             data.games[i].showDateHeader = data.games[i].date.getTime() > currentHeaderDate;
+
+                            if(sync){
+                                var g = $filter('filter')(weekMaster.games, {identifier: data.games[i].identifier});
+                                if(g.length > 0){
+                                    data.games[i].follow = g[0].follow;
+                                }
+                                else{
+                                    data.games[i].follow = false;
+                                }
+                            }
+                            else{
+                                data.games[i].follow = false;
+                            }
+
                             if (data.games[i].showDateHeader) {
                                 currentHeaderDate = data.games[i].date.getTime()
                             }
                         }
 
-                        weekMaster = {
-                            weekNumber: data.weekNumber,
-                            games: data.games
-                        }
+                        weekMaster.weekNumber = data.weekNumber;
+                        weekMaster.games = data.games;
 
                         window.localStorage['lineAlertApp.nflWeek'] = angular.toJson(weekMaster);
 

@@ -1,4 +1,9 @@
-<ion-view title='{{game.date | amDateFormat: "ddd MMM D - h:mm A"}}' hide-back-button="false">
+<ion-view title='{{game.date | amDateFormat: "ddd MMM D - h:mm A"}}' hide-back-button="true">
+    <ion-nav-buttons side="left">
+        <button class="button button-icon" ng-click="goBack()">
+            <i class="icon ion-arrow-left-c"></i>
+        </button>
+    </ion-nav-buttons>
     <ion-content>
         <div class="card">
             <div class="item padding">
