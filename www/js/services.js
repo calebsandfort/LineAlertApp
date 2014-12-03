@@ -101,13 +101,14 @@ lineAlertAppServices.factory('NbaService', ['$q', 'NbaApiService',
                     gamesMasterSet = false;
                 }
 
+                var performGetList = true;
+
                 if(gamesMasterSet){
+                    performGetList = false;
                     q.resolve(gamesMaster);
                 }
 
-                var performGetList = true;
-
-                if(!refresh) {
+                if(!refresh && !gamesMasterSet) {
                     var nbaGamesString = window.localStorage['lineAlertApp.nbaGames'];
 
                     if (nbaGamesString) {
@@ -183,13 +184,14 @@ lineAlertAppServices.factory('NflService', ['$q', 'NflApiService', 'Restangular'
                     weekMasterSet = false;
                 }
 
+                var performGetList = true;
+
                 if(weekMasterSet){
+                    performGetList = false;
                     q.resolve(weekMaster);
                 }
 
-                var performGetList = true;
-
-                if(!refresh) {
+                if(!refresh && !weekMasterSet) {
                     var nflWeekString = window.localStorage['lineAlertApp.nflWeek'];
 
                     if (nflWeekString) {
