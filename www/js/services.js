@@ -132,6 +132,7 @@ lineAlertAppServices.factory('NbaService', ['$q', 'NbaApiService',
                             games[i].homeName = teams[games[i].homeIndex].name;
                             games[i].date = new Date(games[i].date);
                             games[i].showDateHeader = games[i].date.getTime() > currentHeaderDate;
+                            games[i].follow = false;
                             if (games[i].showDateHeader) {
                                 currentHeaderDate = games[i].date.getTime()
                             }

@@ -6,7 +6,7 @@ lineAlertAppControllers.controller('globalController', function ($scope, $locati
         };
 
         $scope.isActive = function(route) {
-                return route === $location.path();
+                return  $location.path().indexOf(route) > -1;
         };
 
         $scope.$on('pushNotificationReceived', function(event, notification) {
@@ -18,7 +18,7 @@ lineAlertAppControllers.controller('globalController', function ($scope, $locati
                                                 deviceId: $cordovaDevice.getUUID(),
                                                 pushId: notification.regid
                                         }).then(function (id) {
-                                                    alert("You've successfully registered; your id is " + id);
+                                                    //alert("You've successfully registered; your id is " + id);
                                             },
                                             function (e) {
                                                     alert("Error: " + JSON.stringify(e));

@@ -1,7 +1,4 @@
-<ion-view title='{{game.date | amDateFormat: "ddd MMM D - h:mm A"}}' show-back-button="false">
-    <ion-nav-buttons side="left">
-
-    </ion-nav-buttons>
+<ion-view title='{{game.date | amDateFormat: "ddd MMM D - h:mm A"}}' hide-back-button="false">
     <ion-content>
         <div class="card">
             <div class="item padding">
@@ -10,7 +7,7 @@
                         <h2>{{ game.awayName }}</h2>
                     </div>
                     <div class="col" ng-hide="game.bovadaLvOverUnder == -1000">
-                        <h2>{{ game.bovadaLvOverUnder }}</h2>
+                        <h2 style="float: right;">{{ game.bovadaLvOverUnder }}</h2>
                     </div>
                 </div>
                 <div class="row">
@@ -18,7 +15,20 @@
                         <h2>{{ game.homeName }}</h2>
                     </div>
                     <div class="col" ng-hide="game.bovadaLvLine == -1000">
-                        <h2>{{ game.bovadaLvLine | line }}</h2>
+                        <h2 style="float: right;">{{ game.bovadaLvLine | line }}</h2>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-center">
+                        <h2>Follow</h2>
+                    </div>
+                    <div class="col">
+                        <label class="toggle toggle-balanced" style="float: right;">
+                            <input type="checkbox" ng-model="game.follow">
+                            <div class="track">
+                                <div class="handle"></div>
+                            </div>
+                        </label>
                     </div>
                 </div>
             </div>
