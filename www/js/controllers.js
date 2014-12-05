@@ -137,3 +137,10 @@ lineAlertAppControllers.controller('gameController', function ($scope, $ionicNav
                 $ionicNavBarDelegate.back();
         }
 });
+
+lineAlertAppControllers.controller('preferencesController', function ($scope, $ionicNavBarDelegate) {
+
+        $scope.goBack = function(){
+                $ionicNavBarDelegate.back();
+        }
+});

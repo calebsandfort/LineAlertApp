@@ -78,6 +78,13 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
         {identifier: 42, name: "Tennessee Titans"},
         {identifier: 50, name: "Washington Redskins"}
     ])
+    .constant("SportsBooks",
+    {
+        BovadaLv: { value: 1, display: "Bovada.lv" },
+        SportsBettingAg: { value: 2, display: "Sportsbetting.ag" },
+        FiveDimesEu: { value: 3, display: "5Dimes.eu" },
+        BetOnlineAg: { value: 4, display: "BetOnline.ag" }
+    })
     .config(function($stateProvider, $urlRouterProvider, RestangularProvider) {
         $stateProvider
             .state('app', {
@@ -136,6 +143,20 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
                         return g;
                     }
                 }
+            })
+            .state('app.misc', {
+                abstract: true,
+                url: "/misc",
+                views: {
+                    'mainContent' :{
+                        template: '<ion-nav-view></ion-nav-view>'
+                    }
+                }
+            })
+            .state('app.misc.preferences', {
+                url: "/preferences",
+                templateUrl: "partials/preferences.html",
+                controller: "preferencesController"
             })
 
         $urlRouterProvider.otherwise("/app/nba");

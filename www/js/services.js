@@ -29,6 +29,9 @@ lineAlertAppServices.factory('UserApiService', ['Restangular',
 
 lineAlertAppServices.factory('UserService', ['$q', 'UserApiService',
     function ($q, UserApiService) {
+        var userMaster = {};
+        var userMasterSet = false;
+
         return {
             register: function (user) {
                 var q = $q.defer();
