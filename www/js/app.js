@@ -182,16 +182,34 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
 
         RestangularProvider.setBaseUrl('http://guerillalogistics.com/LineAlertApp/api');
     })
-    .run(function ($ionicPlatform, PushReceiverService, $cordovaDevice) {
+    .run(function ($ionicPlatform, PushReceiverService, $cordovaDevice, UserService, $rootScope) {
         $ionicPlatform.ready(function () {
             // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
             // for form inputs)
+
             if (window.cordova && window.cordova.plugins.Keyboard) {
                 cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
             }
 
-            if(typeof (window.plugins) != "undefined" && typeof (window.plugins.pushNotification) != "undefined" && window.plugins.pushNotification){
-                PushReceiverService.register("822489992888");
+            if(!$cordovaDevice.deviceExists()){
+                UserService.get("development", false).then(function(user){
+                        $rootScope.$broadcast('userUpdated', user);
+                    },
+                    function(e){
+
+                    });
+            }
+            else{
+                UserService.get($cordovaDevice.getUUID(), false).then(function(user){
+                        $rootScope.$broadcast('userUpdated', user);
+
+                        if(typeof (window.plugins) != "undefined" && typeof (window.plugins.pushNotification) != "undefined" && window.plugins.pushNotification){
+                            PushReceiverService.register("822489992888");
+                        }
+                },
+                function(e){
+
+                });
             }
 
             if (window.StatusBar) {

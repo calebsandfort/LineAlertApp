@@ -30,6 +30,10 @@ angular.module('ngCordova.plugins.device', [])
 
       getVersion: function () {
         return device.version;
+      },
+
+      deviceExists: function(){
+        return typeof (device) != "undefined";
       }
     };
   }]);

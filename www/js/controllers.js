@@ -1,6 +1,8 @@
 var lineAlertAppControllers = angular.module('lineAlertAppControllers', []);
 
 lineAlertAppControllers.controller('globalController', function ($scope, $location, $ionicSideMenuDelegate, $cordovaDevice, UserService, LogMessageService) {
+        $scope.user = {};
+
         $scope.toggleSideMenu = function() {
                 $ionicSideMenuDelegate.toggleLeft();
         };
@@ -13,16 +15,19 @@ lineAlertAppControllers.controller('globalController', function ($scope, $locati
 
                 switch (notification.event) {
                         case 'registered':
-                                if (notification.regid.length > 0) {
-                                        UserService.register({
-                                                deviceId: $cordovaDevice.getUUID(),
-                                                pushId: notification.regid
-                                        }).then(function (id) {
-                                                    //alert("You've successfully registered; your id is " + id);
-                                            },
-                                            function (e) {
-                                                    alert("Error: " + JSON.stringify(e));
-                                            });
+                                if (notification.regid.length > 0 && notification.regid != $scope.user.pushId) {
+                                        if($scope.user.pushId == ''){
+                                                $scope.user.pushNotificationsAllowed = true;
+                                                $scope.user.bovadaLvPushNotificationsEnabled = true;
+                                        }
+
+                                        $scope.user.pushId = notification.regid;
+                                        UserService.save($scope.user).then(function(){
+
+                                        },
+                                        function(e){
+
+                                        });
                                 }
                                 break;
                         case 'message':
@@ -44,6 +49,13 @@ lineAlertAppControllers.controller('globalController', function ($scope, $locati
                                 //alert(logMessage.message);
                                 break;
                 }
+        });
+
+
+
+        $scope.$on('userUpdated', function(event, u) {
+                $scope.user = u;
+                //$scope.$apply();
         });
 });
 

@@ -33,6 +33,19 @@ lineAlertAppServices.factory('UserService', ['$q', 'UserApiService',
         var userMasterSet = false;
 
         return {
+            save: function(user){
+                var q = $q.defer();
+                UserApiService.post(user).then(function () {
+                    userMaster = user;
+                    window.localStorage['lineAlertApp.user'] = angular.toJson(userMaster);
+                    q.resolve();
+                }, function (e) {
+                    alert(JSON.stringify(e));
+                    q.reject(e);
+                });
+
+                return q.promise;
+            },
             register: function (user) {
                 var q = $q.defer();
 
@@ -63,14 +76,57 @@ lineAlertAppServices.factory('UserService', ['$q', 'UserApiService',
 
                 return q.promise;
             },
-            get: function(id){
+            get: function(deviceId, refresh){
                 var q = $q.defer();
 
-                UserApiService.one(id).get().then(function(user){
-                    q.resolve(user)
-                }, function(e){
-                    q.reject(e);
-                });
+                if(refresh){
+                    userMasterSet = false;
+                }
+
+                var performGetUser = true;
+
+                if(userMasterSet){
+                    performGetUser = false;
+                    q.resolve(userMaster);
+                }
+
+                if(!refresh && !userMasterSet) {
+                    var userString = window.localStorage['lineAlertApp.user'];
+
+                    if (userString) {
+                        var userFromStorage = angular.fromJson(userString);
+
+                        performGetUser = false;
+                        userMaster = userFromStorage;
+                        userMasterSet = true;
+                        q.resolve(userMaster);
+                    }
+                }
+
+                if(performGetUser){
+                    UserApiService.one(deviceId).get().then(function(user){
+                        userMaster = {
+                            identifier: user.identifier,
+                            added: user.added,
+                            deviceId: user.deviceId,
+                            pushId: user.pushId,
+                            pushNotificationsAllowed: user.pushNotificationsAllowed,
+                            bovadaLvPushNotificationsEnabled: user.bovadaLvPushNotificationsEnabled,
+                            sportsBettingAgPushNotificationsEnabled: user.sportsBettingAgPushNotificationsEnabled,
+                            fiveDimesEuPushNotificationsEnabled: user.fiveDimesEuPushNotificationsEnabled,
+                            betOnlineAgPushNotificationsEnabled: user.betOnlineAgPushNotificationsEnabled,
+                            favoriteSportsBook: user.favoriteSportsBook
+                        }
+
+                        window.localStorage['lineAlertApp.user'] = angular.toJson(userMaster);
+
+                        userMasterSet = true
+
+                        q.resolve(userMaster)
+                    }, function(e){
+                        q.reject(e);
+                    });
+                }
 
                 return q.promise;
             }
