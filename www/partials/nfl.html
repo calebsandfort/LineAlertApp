@@ -19,16 +19,16 @@
                     <div class="col col-75">
                         {{ game.awayName }}
                     </div>
-                    <div class="col" ng-hide="game.bovadaLvOverUnder == -1000">
-                        {{ game.bovadaLvOverUnder }}
+                    <div class="col" ng-show="showGameOverUnder(game)">
+                        {{ getGameOverUnder(game) }}
                     </div>
                 </div>
                 <div class="row">
                     <div class="col col-75">
                         {{ game.homeName }}
                     </div>
-                    <div class="col" ng-hide="game.bovadaLvLine == -1000">
-                        {{ game.bovadaLvLine | line }}
+                    <div class="col" ng-show="showGameLine(game)">
+                        {{ getGameLine(game) }}
                     </div>
                 </div>
             </div>

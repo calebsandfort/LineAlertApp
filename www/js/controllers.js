@@ -1,6 +1,6 @@
 var lineAlertAppControllers = angular.module('lineAlertAppControllers', []);
 
-lineAlertAppControllers.controller('globalController', function ($scope, $location, $ionicSideMenuDelegate, $cordovaDevice, UserService, LogMessageService) {
+lineAlertAppControllers.controller('globalController', function ($scope, $filter, $location, $ionicSideMenuDelegate, $cordovaDevice, UserService, LogMessageService, SportsBooks) {
         $scope.user = {};
 
         $scope.toggleSideMenu = function() {
@@ -51,12 +51,94 @@ lineAlertAppControllers.controller('globalController', function ($scope, $locati
                 }
         });
 
-
-
         $scope.$on('userUpdated', function(event, u) {
                 $scope.user = u;
                 //$scope.$apply();
         });
+
+        $scope.showGameOverUnder = function(g){
+                var overUnder = -1000;
+
+                switch ($scope.user.favoriteSportsBook){
+                        case  SportsBooks.BovadaLv.value:
+                                overUnder = g.bovadaLvOverUnder;
+                                break;
+                        case  SportsBooks.SportsBettingAg.value:
+                                overUnder = g.sportsBettingAgOverUnder;
+                                break;
+                        case  SportsBooks.FiveDimesEu.value:
+                                overUnder = g.fiveDimesEuOverUnder;
+                                break;
+                        case  SportsBooks.BetOnlineAg.value:
+                                overUnder = g.betOnlineAgOverUnder;
+                                break;
+                }
+
+                return overUnder > -1000;
+        }
+
+        $scope.getGameOverUnder = function(g){
+                var overUnder = -1000;
+
+                switch ($scope.user.favoriteSportsBook){
+                        case  SportsBooks.BovadaLv.value:
+                                overUnder = g.bovadaLvOverUnder;
+                        break;
+                        case  SportsBooks.SportsBettingAg.value:
+                                overUnder = g.sportsBettingAgOverUnder;
+                        break;
+                        case  SportsBooks.FiveDimesEu.value:
+                                overUnder = g.fiveDimesEuOverUnder;
+                        break;
+                        case  SportsBooks.BetOnlineAg.value:
+                                overUnder = g.betOnlineAgOverUnder;
+                        break;
+                }
+
+                return overUnder;
+        }
+
+        $scope.showGameLine = function(g){
+                var line = -1000;
+
+                switch ($scope.user.favoriteSportsBook){
+                        case  SportsBooks.BovadaLv.value:
+                                line = g.bovadaLvLine;
+                                break;
+                        case  SportsBooks.SportsBettingAg.value:
+                                line = g.sportsBettingAgLine;
+                                break;
+                        case  SportsBooks.FiveDimesEu.value:
+                                line = g.fiveDimesEuLine;
+                                break;
+                        case  SportsBooks.BetOnlineAg.value:
+                                line = g.betOnlineAgLine;
+                                break;
+                }
+
+                return line > -1000;
+        }
+
+        $scope.getGameLine = function(g){
+                var line = -1000;
+
+                switch ($scope.user.favoriteSportsBook){
+                        case  SportsBooks.BovadaLv.value:
+                                line = g.bovadaLvLine;
+                                break;
+                        case  SportsBooks.SportsBettingAg.value:
+                                line = g.sportsBettingAgLine;
+                                break;
+                        case  SportsBooks.FiveDimesEu.value:
+                                line = g.fiveDimesEuLine;
+                                break;
+                        case  SportsBooks.BetOnlineAg.value:
+                                line = g.betOnlineAgLine;
+                                break;
+                }
+
+                return $filter("line")(line);
+        }
 });
 
 lineAlertAppControllers.controller('landingController', function ($scope, $location) {
@@ -150,9 +232,24 @@ lineAlertAppControllers.controller('gameController', function ($scope, $ionicNav
         }
 });
 
-lineAlertAppControllers.controller('preferencesController', function ($scope, $ionicNavBarDelegate) {
+lineAlertAppControllers.controller('preferencesController', function ($scope, $ionicNavBarDelegate, UserService) {
+        $scope.pushNotificationsAllowedChange = function(){
+                if(!$scope.user.pushNotificationsAllowed){
+                        $scope.user.bovadaLvPushNotificationsEnabled =
+                        $scope.user.sportsBettingAgPushNotificationsEnabled =
+                        $scope.user.fiveDimesEuPushNotificationsEnabled =
+                        $scope.user.betOnlineAgPushNotificationsEnabled = false;
+                }
+        }
 
         $scope.goBack = function(){
+                $scope.user.favoriteSportsBook = parseInt($scope.user.favoriteSportsBook);
+                UserService.save($scope.user).then(function(){
+
+                    },
+                    function(e){
+
+                    });
                 $ionicNavBarDelegate.back();
         }
 });

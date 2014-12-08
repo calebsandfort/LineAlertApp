@@ -5,6 +5,23 @@
         </button>
     </ion-nav-buttons>
     <ion-content>
-
+        <div class="list">
+            <label class="item item-input item-select">
+                <div class="input-label">
+                    Favorite Sportsbook
+                </div>
+                <select ng-model="user.favoriteSportsBook" ng-change="change()">
+                    <option value="3">5Dimes.eu</option>
+                    <option value="4">BetOnline.ag</option>
+                    <option value="1">Bovada.lv</option>
+                    <option value="2">SportsBetting.ag</option>
+                </select>
+            </label>
+            <ion-toggle ng-model="user.pushNotificationsAllowed" toggle-class="toggle-balanced" ng-change="pushNotificationsAllowedChange()">Notifications Enabled</ion-toggle>
+            <ion-toggle ng-model="user.fiveDimesEuPushNotificationsEnabled" toggle-class="toggle-balanced" ng-show="user.pushNotificationsAllowed">5Dimes.eu Notifications</ion-toggle>
+            <ion-toggle ng-model="user.betOnlineAgPushNotificationsEnabled" toggle-class="toggle-balanced" ng-show="user.pushNotificationsAllowed">BetOnline.ag Notifications</ion-toggle>
+            <ion-toggle ng-model="user.bovadaLvPushNotificationsEnabled" toggle-class="toggle-balanced" ng-show="user.pushNotificationsAllowed">Bovada.lv Notifications</ion-toggle>
+            <ion-toggle ng-model="user.sportsBettingAgPushNotificationsEnabled" toggle-class="toggle-balanced" ng-show="user.pushNotificationsAllowed">SportsBetting.ag Notifications</ion-toggle>
+        </div>
     </ion-content>
 </ion-view>
