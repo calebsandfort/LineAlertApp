@@ -23,7 +23,7 @@
                         <h2 style="float: right;">{{ getGameLine(game) }}</h2>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row" ng-show="user.pushNotificationsAllowed">
                     <div class="col col-center">
                         <h2>Follow</h2>
                     </div>
@@ -36,6 +36,13 @@
                         </label>
                     </div>
                 </div>
+                <!--<div class="row">
+                    <div class="col">
+                        <button class="button button-balanced" ng-click="fireEvent()">
+                            event
+                        </button>
+                    </div>
+                </div>-->
             </div>
         </div>
         <div class="card">

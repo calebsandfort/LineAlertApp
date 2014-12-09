@@ -22,6 +22,51 @@ lineAlertAppServices.factory('LogMessageService', ['$q', 'LogMessageApiService',
         };
     }]);
 
+lineAlertAppServices.factory('RefreshService', [
+    function(){
+        return {
+            getLastMasterRefreshDate: function(){
+                var lastMasterRefreshDate = null;
+                var lastMasterRefreshDateString = window.localStorage['lineAlertApp.refresh.lastMasterRefreshDate'];
+
+                if(lastMasterRefreshDateString) {
+                    lastMasterRefreshDate = moment(angular.fromJson(lastMasterRefreshDateString));
+                }
+
+                return lastMasterRefreshDate;
+            },
+            setLastMasterRefreshDate: function(lastMasterRefreshDate){
+                window.localStorage['lineAlertApp.refresh.lastMasterRefreshDate'] = angular.toJson(lastMasterRefreshDate);
+            },
+            getLastNbaRefreshDate: function(){
+                var lastNbaRefreshDate = null;
+                var lastNbaRefreshDateString = window.localStorage['lineAlertApp.refresh.lastNbaRefreshDate'];
+
+                if(lastNbaRefreshDateString) {
+                    lastNbaRefreshDate = moment(angular.fromJson(lastNbaRefreshDateString));
+                }
+
+                return lastNbaRefreshDate;
+            },
+            setLastNbaRefreshDate: function(lastNbaRefreshDate){
+                window.localStorage['lineAlertApp.refresh.lastNbaRefreshDate'] = angular.toJson(lastNbaRefreshDate);
+            },
+            getLastNflRefreshDate: function(){
+                var lastNflRefreshDate = null;
+                var lastNflRefreshDateString = window.localStorage['lineAlertApp.refresh.lastNflRefreshDate'];
+
+                if(lastNflRefreshDateString) {
+                    lastNflRefreshDate = moment(angular.fromJson(lastNflRefreshDateString));
+                }
+
+                return lastNflRefreshDate;
+            },
+            setLastNflRefreshDate: function(lastNflRefreshDate){
+                window.localStorage['lineAlertApp.refresh.lastNflRefreshDate'] = angular.toJson(lastNflRefreshDate);
+            }
+        }
+    }]);
+
 lineAlertAppServices.factory('UserApiService', ['Restangular',
     function (Restangular) {
         return Restangular.service('UserApi');
@@ -33,6 +78,19 @@ lineAlertAppServices.factory('UserService', ['$q', 'UserApiService',
         var userMasterSet = false;
 
         return {
+            getLastRefreshDate: function(){
+                var lastRefreshDate = null;
+                var lastRefreshDateString = window.localStorage['lineAlertApp.user.lastRefreshDate'];
+
+                if(lastRefreshDateString) {
+                    lastRefreshDate = angular.fromJson(lastRefreshDateString);
+                }
+
+                return lastRefreshDate;
+            },
+            setLastRefreshDate: function(lastRefreshDate){
+                window.localStorage['lineAlertApp.user.lastRefreshDate'] = angular.toJson(lastRefreshDate);
+            },
             save: function(user){
                 var q = $q.defer();
                 UserApiService.post(user).then(function () {
@@ -40,7 +98,7 @@ lineAlertAppServices.factory('UserService', ['$q', 'UserApiService',
                     window.localStorage['lineAlertApp.user'] = angular.toJson(userMaster);
                     q.resolve();
                 }, function (e) {
-                    alert(JSON.stringify(e));
+                    //alert(JSON.stringify(e));
                     q.reject(e);
                 });
 
@@ -144,6 +202,18 @@ lineAlertAppServices.factory('NbaService', ['$q', '$filter', 'NbaApiService', 'N
         var gamesMasterSet = false;
 
         return {
+            applyPushUpdate: function(update){
+                var game = $filter('filter')(weekMaster.games, {identifier: update.game.identifier});
+                if(game.length > 0) {
+                    game = game[0];
+
+                    for (var i = 0; i < update.game.updates.length; i++) {
+                        game[update.game.updates[i].lineName] = update.game.updates[i].line;
+                    }
+
+                    this.updateLocalStorage();
+                }
+            },
             updateLocalStorage: function(){
                 window.localStorage['lineAlertApp.nbaGames'] = angular.toJson(gamesMaster);
             },
@@ -223,6 +293,7 @@ lineAlertAppServices.factory('NbaService', ['$q', '$filter', 'NbaApiService', 'N
                         $ionicLoading.hide();
                         q.resolve(gamesMaster);
                     }, function (e) {
+                        $ionicLoading.hide();
                         q.reject(e);
                     });
                 }
@@ -246,6 +317,18 @@ lineAlertAppServices.factory('NflService', ['$q', '$filter', 'NflApiService', 'R
         var weekMasterSet = false;
 
         return{
+            applyPushUpdate: function(update){
+                var game = $filter('filter')(weekMaster.games, {identifier: update.game.identifier});
+                if(game.length > 0) {
+                    game = game[0];
+
+                    for (var i = 0; i < update.game.updates.length; i++) {
+                        game[update.game.updates[i].lineName] = update.game.updates[i].line;
+                    }
+
+                    this.updateLocalStorage();
+                }
+            },
             updateLocalStorage: function(){
                 window.localStorage['lineAlertApp.nflWeek'] = angular.toJson(weekMaster);
             },
@@ -327,6 +410,7 @@ lineAlertAppServices.factory('NflService', ['$q', '$filter', 'NflApiService', 'R
                         $ionicLoading.hide();
                         q.resolve(weekMaster);
                     }, function (e) {
+                        $ionicLoading.hide();
                         q.reject(e);
                     });
                 }

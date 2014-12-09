@@ -4,11 +4,16 @@
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
 angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices', 'lineAlertAppControllers',
-    'lineAlertAppFilters', 'ngCordova.plugins.push', 'ngCordova.plugins.device', 'restangular'])
+    'lineAlertAppFilters', 'ngCordova.plugins.push', 'ngCordova.plugins.device', 'ngCordova.plugins.toast', 'restangular'])
     .constant("LeaguesEnum",
     {
-        NBA: 1,
-        NFL: 2
+        NBA: { value: 1, display: "NBA" },
+        NFL: { value: 2, display: "NFL" }
+    })
+    .constant("LogMessageTypes",
+    {
+        Error: 1,
+        Info: 2
     })
     .constant("NbaTeams",
     [
@@ -113,7 +118,7 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
                 resolve: {
                     game: function($stateParams, NbaService, LeaguesEnum) {
                         var g = NbaService.getGame($stateParams.index);
-                        g.league = LeaguesEnum.NBA;
+                        g.league = LeaguesEnum.NBA.value;
                         return g;
                     }
                 }
@@ -139,7 +144,7 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
                 resolve: {
                     game: function($stateParams, NflService, LeaguesEnum) {
                         var g = NflService.getGame($stateParams.index);
-                        g.league = LeaguesEnum.NFL;
+                        g.league = LeaguesEnum.NFL.value;
                         return g;
                     }
                 }
@@ -182,7 +187,25 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
 
         RestangularProvider.setBaseUrl('http://guerillalogistics.com/LineAlertApp/api');
     })
-    .run(function ($ionicPlatform, PushReceiverService, $cordovaDevice, UserService, $rootScope) {
+    .factory('$exceptionHandler', ["$injector", function($injector, LogMessageTypes) {
+        var LogMessageApiService;
+        var LogMessageTypes;
+
+        return function(exception, cause) {
+            LogMessageApiService = LogMessageApiService || $injector.get("LogMessageApiService");
+            LogMessageTypes = LogMessageTypes || $injector.get("LogMessageTypes");
+
+            var message = exception.stack;
+            if(typeof (cause) != "undefined"){
+                message += "\r\n\r\nCause: " + cause;
+            }
+
+            LogMessageApiService.post({ logMessageType: LogMessageTypes.Error, message: message});
+
+        };
+    }])
+    .run(function ($ionicPlatform, PushReceiverService, $cordovaDevice, UserService,
+                   $rootScope, $interval, RefreshService) {
         $ionicPlatform.ready(function () {
             // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
             // for form inputs)
@@ -215,5 +238,34 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
             if (window.StatusBar) {
                 StatusBar.styleDefault();
             }
+
+            var setRefresh = moment();
+            var secondAgo = moment(setRefresh).subtract(1, "seconds");
+            RefreshService.setLastMasterRefreshDate(setRefresh);
+            RefreshService.setLastNbaRefreshDate(secondAgo);
+            RefreshService.setLastNflRefreshDate(secondAgo);
+
+            var refreshInterval = $interval(function(){
+                RefreshService.setLastMasterRefreshDate(moment());
+                $rootScope.$broadcast('refreshGames');
+            }, 900000);
+
+            $ionicPlatform.on("pause", function(){
+                $interval.cancel(refreshInterval);
+                refreshInterval = null;
+            });
+
+            $ionicPlatform.on("resume", function(){
+                var currentDate = moment();
+                if(currentDate.diff(RefreshService.getLastMasterRefreshDate(), 'minutes') >= 15){
+                    RefreshService.setLastMasterRefreshDate(currentDate);
+                    $rootScope.$broadcast('refreshGames');
+                }
+
+                refreshInterval = $interval(function(){
+                    RefreshService.setLastMasterRefreshDate(moment());
+                    $rootScope.$broadcast('refreshGames');
+                }, 900000);
+            });
         });
     })
