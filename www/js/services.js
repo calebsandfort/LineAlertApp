@@ -191,6 +191,39 @@ lineAlertAppServices.factory('UserService', ['$q', 'UserApiService',
         };
     }]);
 
+lineAlertAppServices.factory('UserGameApiService', ['Restangular',
+    function (Restangular) {
+        return Restangular.service('UserGameApi');
+    }]);
+
+lineAlertAppServices.factory('UserGameService', ['$q', 'UserGameApiService', 'Restangular',
+    function ($q, UserGameApiService, Restangular) {
+        return {
+            add: function (userGame) {
+                var q = $q.defer();
+
+                UserGameApiService.post(userGame).then(function (id) {
+                    q.resolve(id);
+                }, function (e) {
+                    q.reject(e);
+                });
+
+                return q.promise;
+            },
+            remove: function(userIdentifier, gameIdentifier){
+                var q = $q.defer();
+
+                Restangular.all("UserGameApi").remove({userIdentifier: userIdentifier, gameIdentifier: gameIdentifier}).then(function(){
+                    q.resolve();
+                }, function (e) {
+                    q.reject(e);
+                });
+
+                return q.promise;
+            }
+        };
+    }]);
+
 lineAlertAppServices.factory('NbaApiService', ['Restangular',
     function (Restangular) {
         return Restangular.service('NbaApi');
@@ -217,9 +250,17 @@ lineAlertAppServices.factory('NbaService', ['$q', '$filter', 'NbaApiService', 'N
             updateLocalStorage: function(){
                 window.localStorage['lineAlertApp.nbaGames'] = angular.toJson(gamesMaster);
             },
-            getGame: function (index) {
+            getGame: function (identifier) {
                 if(gamesMasterSet){
-                    return gamesMaster[index];
+
+                    var game = $filter('filter')(gamesMaster, {identifier: identifier});
+                    if(game.length > 0) {
+                        return game[0];
+
+                    }
+                    else{
+                        return null;
+                    }
                 }
                 else{
                     return null;
@@ -239,16 +280,19 @@ lineAlertAppServices.factory('NbaService', ['$q', '$filter', 'NbaApiService', 'N
                     q.resolve(gamesMaster);
                 }
 
-                if(!refresh && !gamesMasterSet) {
+                if(!gamesMasterSet) {
                     var nbaGamesString = window.localStorage['lineAlertApp.nbaGames'];
 
                     if (nbaGamesString) {
                         var nbaGamesFromStorage = angular.fromJson(nbaGamesString);
 
-                        performGetList = false;
                         gamesMaster = nbaGamesFromStorage;
                         gamesMasterSet = true;
-                        q.resolve(gamesMaster);
+
+                        if(!refresh) {
+                            performGetList = false;
+                            q.resolve(gamesMaster);
+                        }
                     }
                 }
 
@@ -332,9 +376,17 @@ lineAlertAppServices.factory('NflService', ['$q', '$filter', 'NflApiService', 'R
             updateLocalStorage: function(){
                 window.localStorage['lineAlertApp.nflWeek'] = angular.toJson(weekMaster);
             },
-            getGame: function (index) {
+            getGame: function (identifier) {
                 if(weekMasterSet){
-                    return weekMaster.games[index];
+
+                    var game = $filter('filter')(weekMaster.games, {identifier: identifier});
+                    if(game.length > 0) {
+                        return game[0];
+
+                    }
+                    else{
+                        return null;
+                    }
                 }
                 else{
                     return null;
@@ -354,16 +406,19 @@ lineAlertAppServices.factory('NflService', ['$q', '$filter', 'NflApiService', 'R
                     q.resolve(weekMaster);
                 }
 
-                if(!refresh && !weekMasterSet) {
+                if(!weekMasterSet) {
                     var nflWeekString = window.localStorage['lineAlertApp.nflWeek'];
 
                     if (nflWeekString) {
                         var nflWeekFromStorage = angular.fromJson(nflWeekString);
 
-                        performGetList = false;
                         weekMaster = nflWeekFromStorage;
                         weekMasterSet = true;
-                        q.resolve(weekMaster);
+
+                        if(!refresh) {
+                            performGetList = false;
+                            q.resolve(weekMaster);
+                        }
                     }
                 }
 

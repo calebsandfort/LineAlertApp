@@ -10,7 +10,7 @@
         </button>
     </ion-nav-buttons>
     <ion-content>
-        <div class="card" ng-repeat="game in games" ui-sref="app.nba.game({index: $index})">
+        <div class="card" ng-repeat="game in games" ui-sref="app.nba.game({identifier: game.identifier})">
             <div class="item item-divider" ng-if="game.showDateHeader">
                 {{game.date | amDateFormat: "ddd MMM D - h:mm A"}}
             </div>

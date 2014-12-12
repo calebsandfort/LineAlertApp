@@ -112,12 +112,12 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
                 controller: "nbaController"
             })
             .state('app.nba.game', {
-                url: "/:index",
+                url: "/:identifier",
                 templateUrl: "partials/game.html",
                 controller: "gameController",
                 resolve: {
                     game: function($stateParams, NbaService, LeaguesEnum) {
-                        var g = NbaService.getGame($stateParams.index);
+                        var g = NbaService.getGame($stateParams.identifier);
                         g.league = LeaguesEnum.NBA.value;
                         return g;
                     }
@@ -138,12 +138,12 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
                 controller: "nflController"
             })
             .state('app.nfl.game', {
-                url: "/:index",
+                url: "/:identifier",
                 templateUrl: "partials/game.html",
                 controller: "gameController",
                 resolve: {
                     game: function($stateParams, NflService, LeaguesEnum) {
-                        var g = NflService.getGame($stateParams.index);
+                        var g = NflService.getGame($stateParams.identifier);
                         g.league = LeaguesEnum.NFL.value;
                         return g;
                     }
@@ -202,6 +202,7 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
 
             LogMessageApiService.post({ logMessageType: LogMessageTypes.Error, message: message});
 
+            console.error(message);
         };
     }])
     .run(function ($ionicPlatform, PushReceiverService, $cordovaDevice, UserService,
