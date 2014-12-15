@@ -85,10 +85,10 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
     ])
     .constant("SportsBooks",
     {
-        BovadaLv: { value: 1, display: "Bovada.lv" },
-        SportsBettingAg: { value: 2, display: "Sportsbetting.ag" },
-        FiveDimesEu: { value: 3, display: "5Dimes.eu" },
-        BetOnlineAg: { value: 4, display: "BetOnline.ag" }
+        BovadaLv: { value: 1, display: "Bovada" },
+        SportsBettingAg: { value: 2, display: "Sportsbetting" },
+        FiveDimesEu: { value: 3, display: "5Dimes" },
+        BetOnlineAg: { value: 4, display: "BetOnline" }
     })
     .config(function($stateProvider, $urlRouterProvider, RestangularProvider) {
         $stateProvider
