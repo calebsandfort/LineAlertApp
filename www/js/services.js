@@ -63,6 +63,19 @@ lineAlertAppServices.factory('RefreshService', [
             },
             setLastNflRefreshDate: function(lastNflRefreshDate){
                 window.localStorage['lineAlertApp.refresh.lastNflRefreshDate'] = angular.toJson(lastNflRefreshDate);
+            },
+            getLastNhlRefreshDate: function(){
+                var lastNhlRefreshDate = null;
+                var lastNhlRefreshDateString = window.localStorage['lineAlertApp.refresh.lastNhlRefreshDate'];
+
+                if(lastNhlRefreshDateString) {
+                    lastNhlRefreshDate = moment(angular.fromJson(lastNhlRefreshDateString));
+                }
+
+                return lastNhlRefreshDate;
+            },
+            setLastNhlRefreshDate: function(lastNhlRefreshDate){
+                window.localStorage['lineAlertApp.refresh.lastNhlRefreshDate'] = angular.toJson(lastNhlRefreshDate);
             }
         }
     }]);
@@ -473,6 +486,129 @@ lineAlertAppServices.factory('NflService', ['$q', '$filter', 'NflApiService', 'R
                 return q.promise;
             }
         }
+    }]);
+
+lineAlertAppServices.factory('NhlApiService', ['Restangular',
+    function (Restangular) {
+        return Restangular.service('NhlApi');
+    }]);
+
+lineAlertAppServices.factory('NhlService', ['$q', '$filter', 'NhlApiService', 'NhlTeams',
+    function ($q, $filter, NhlApiService, NhlTeams) {
+        var gamesMaster = new Array();
+        var gamesMasterSet = false;
+
+        return {
+            applyPushUpdate: function(update){
+                var game = $filter('filter')(weekMaster.games, {identifier: update.game.identifier});
+                if(game.length > 0) {
+                    game = game[0];
+
+                    for (var i = 0; i < update.game.updates.length; i++) {
+                        game[update.game.updates[i].lineName] = update.game.updates[i].line;
+                    }
+
+                    this.updateLocalStorage();
+                }
+            },
+            updateLocalStorage: function(){
+                window.localStorage['lineAlertApp.nhlGames'] = angular.toJson(gamesMaster);
+            },
+            getGame: function (identifier) {
+                if(gamesMasterSet){
+
+                    var game = $filter('filter')(gamesMaster, {identifier: identifier});
+                    if(game.length > 0) {
+                        return game[0];
+
+                    }
+                    else{
+                        return null;
+                    }
+                }
+                else{
+                    return null;
+                }
+            },
+            getGames: function (refresh, $ionicLoading) {
+                var q = $q.defer();
+
+                if(refresh){
+                    gamesMasterSet = false;
+                }
+
+                var performGetList = true;
+
+                if(gamesMasterSet){
+                    performGetList = false;
+                    q.resolve(gamesMaster);
+                }
+
+                if(!gamesMasterSet) {
+                    var nhlGamesString = window.localStorage['lineAlertApp.nhlGames'];
+
+                    if (nhlGamesString) {
+                        var nhlGamesFromStorage = angular.fromJson(nhlGamesString);
+
+                        gamesMaster = nhlGamesFromStorage;
+                        gamesMasterSet = true;
+
+                        if(!refresh) {
+                            performGetList = false;
+                            q.resolve(gamesMaster);
+                        }
+                    }
+                }
+
+                if(performGetList) {
+                    $ionicLoading.show({
+                        template: 'Loading...'
+                    });
+
+                    NhlApiService.getList().then(function (games) {
+                        var currentHeaderDate = new Date("1/1/1990").getTime();
+                        var sync = gamesMaster.length > 0;
+
+                        for (var i = 0; i < games.length; i++) {
+                            games[i].awayName = NhlTeams[games[i].awayIndex].name;
+                            games[i].homeName = NhlTeams[games[i].homeIndex].name;
+                            games[i].date = new Date(games[i].date);
+                            games[i].showDateHeader = games[i].date.getTime() > currentHeaderDate;
+
+                            if(sync){
+                                var g = $filter('filter')(gamesMaster, {identifier: games[i].identifier});
+                                if(g.length > 0){
+                                    games[i].follow = g[0].follow;
+                                }
+                                else{
+                                    games[i].follow = false;
+                                }
+                            }
+                            else{
+                                games[i].follow = false;
+                            }
+
+                            if (games[i].showDateHeader) {
+                                currentHeaderDate = games[i].date.getTime()
+                            }
+                        }
+
+                        window.localStorage['lineAlertApp.nhlGames'] = angular.toJson(games);
+
+                        gamesMaster = games;
+                        gamesMasterSet = true;
+
+                        $ionicLoading.hide();
+                        q.resolve(gamesMaster);
+                    }, function (e) {
+                        $ionicLoading.hide();
+                        q.reject(e);
+                    });
+                }
+
+                return q.promise;
+            }
+        };
     }]);
 
 lineAlertAppServices.factory('PushReceiverService', ["$cordovaPush",

@@ -3,7 +3,7 @@ var lineAlertAppControllers = angular.module('lineAlertAppControllers', []);
 lineAlertAppControllers.controller('globalController', function ($scope, $filter, $location, $state, $stateParams, $timeout,
                                                                  $ionicSideMenuDelegate,
                                                                  $cordovaDevice, $cordovaToast,
-                                                                 UserService, LogMessageService, NbaService, NflService,
+                                                                 UserService, LogMessageService, NbaService, NflService, NhlService,
                                                                  SportsBooks, LeaguesEnum) {
         $scope.user = {};
 
@@ -49,6 +49,10 @@ lineAlertAppControllers.controller('globalController', function ($scope, $filter
                                                 listState = "app.nfl.games";
                                                 gameState = "app.nfl.game";
                                                 break;
+                                        case  LeaguesEnum.NHL.value:
+                                                listState = "app.nhl.games";
+                                                gameState = "app.nhl.game";
+                                                break;
                                 }
 
                                 var appShowing = typeof (notification.foreground) != "undefined" && notification.foreground;
@@ -66,6 +70,9 @@ lineAlertAppControllers.controller('globalController', function ($scope, $filter
                                                         break;
                                                 case  LeaguesEnum.NFL.value:
                                                         NflService.applyPushUpdate(notification.payload);
+                                                        break;
+                                                case  LeaguesEnum.NHL.value:
+                                                        NhlService.applyPushUpdate(notification.payload);
                                                         break;
                                         }
                                 }
@@ -253,6 +260,68 @@ lineAlertAppControllers.controller('nbaController', function ($scope, $filter, $
         });
 });
 
+lineAlertAppControllers.controller('nhlController', function ($scope, $filter, $timeout, $cordovaToast, $ionicLoading, NhlService, RefreshService) {
+        $scope.games = new Array();
+
+        var refresh = false;
+        var lastMasterRefreshDate = RefreshService.getLastMasterRefreshDate();
+        var lastNhlRefreshDate = RefreshService.getLastNhlRefreshDate();
+
+        if(lastMasterRefreshDate && lastNhlRefreshDate && lastNhlRefreshDate.diff(lastMasterRefreshDate) < 0){
+                RefreshService.setLastNhlRefreshDate(lastMasterRefreshDate);
+                refresh = true;
+        }
+
+        NhlService.getGames(refresh, $ionicLoading).then(function (games) {
+                    $scope.games = games;
+            },
+            function (e) {
+                    //alert("Error: " + JSON.stringify(e));
+            });
+
+        $scope.getTeamName = function(index){
+                return $scope.teams[index].name;
+        }
+
+        $scope.refreshGames = function(applyScope){
+                NhlService.getGames(true, $ionicLoading).then(function (games) {
+                            $scope.games = games;
+                            RefreshService.setLastNhlRefreshDate(RefreshService.getLastMasterRefreshDate());
+                            if(applyScope){
+                                    $scope.$apply();
+                            }
+                    },
+                    function (e) {
+                            //alert("Error: " + JSON.stringify(e));
+                    });
+        }
+
+        $scope.$on("refreshGames", function(event){
+                $scope.refreshGames(false);
+        });
+
+        $scope.$on('lineUpdateReceived', function(event, update, showToast) {
+                $timeout(function() {
+                        var game = $filter('filter')($scope.games, {identifier: update.game.identifier});
+                        if (game.length > 0) {
+                                game = game[0];
+
+                                for (var i = 0; i < update.game.updates.length; i++) {
+                                        game[update.game.updates[i].lineName] = update.game.updates[i].line;
+                                }
+
+                                //$scope.$apply();
+                                NhlService.updateLocalStorage();
+
+                                if (showToast) {
+                                        $cordovaToast.showLongCenter(update.message);
+                                }
+                        }
+                });
+        });
+});
+
+
 lineAlertAppControllers.controller('nflController', function ($scope, $state, $timeout, $cordovaToast, $filter, $ionicLoading, NflService, RefreshService) {
         $scope.teams = new Array();
         $scope.currentWeek = {};
@@ -315,24 +384,30 @@ lineAlertAppControllers.controller('nflController', function ($scope, $state, $t
         });
 });
 
-lineAlertAppControllers.controller('gameController', function ($scope, $state, $timeout, $cordovaToast, $ionicNavBarDelegate, NbaService, NflService, UserGameService, LeaguesEnum, game) {
+lineAlertAppControllers.controller('gameController', function ($scope, $state, $timeout, $cordovaToast, $ionicNavBarDelegate, NbaService, NflService, NhlService, UserGameService, LeaguesEnum, game) {
         $scope.game = game;
         $scope.masterFollow = game.follow;
 
-        $scope.goBack = function(){
-                switch (game.league){
+        $scope.goBack = function() {
+                switch (game.league) {
                         case LeaguesEnum.NBA.value:
                                 NbaService.updateLocalStorage();
                                 break;
                         case LeaguesEnum.NFL.value:
                                 NflService.updateLocalStorage();
                                 break;
+                        case LeaguesEnum.NHL.value:
+                                NhlService.updateLocalStorage();
+                                break;
                 }
 
-                if($scope.masterFollow != $scope.game.follow && $scope.game.follow){
-                        UserGameService.add({ userIdentifier: $scope.user.identifier, gameIdentifier: $scope.game.identifier });
+                if ($scope.masterFollow != $scope.game.follow && $scope.game.follow) {
+                        UserGameService.add({
+                                userIdentifier: $scope.user.identifier,
+                                gameIdentifier: $scope.game.identifier
+                        });
                 }
-                else if($scope.masterFollow != $scope.game.follow && !$scope.game.follow){
+                else if ($scope.masterFollow != $scope.game.follow && !$scope.game.follow) {
                         UserGameService.remove($scope.user.identifier, $scope.game.identifier);
                 }
 

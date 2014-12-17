@@ -1,0 +1,37 @@
+<ion-view title="NHL" hide-back-button="true">
+    <ion-nav-buttons side="left">
+        <button class="button button-icon" ng-click="toggleSideMenu()">
+            <i class="icon ion-navicon"></i>
+        </button>
+    </ion-nav-buttons>
+    <ion-nav-buttons side="right">
+        <button class="button button-icon" ng-click="refreshGames(false)">
+            <i class="icon ion-refresh"></i>
+        </button>
+    </ion-nav-buttons>
+    <ion-content>
+        <div class="card" ng-repeat="game in games" ui-sref="app.nhl.game({identifier: game.identifier})">
+            <div class="item item-divider" ng-if="game.showDateHeader">
+                {{game.date | amDateFormat: "ddd MMM D - h:mm A"}}
+            </div>
+            <div class="item padding" ng-class="{'item-balanced': game.follow}">
+                <div class="row">
+                    <div class="col col-75">
+                        {{ game.awayName }}
+                    </div>
+                    <div class="col" ng-show="showGameOverUnder(game)">
+                        {{ getGameOverUnder(game) }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-75">
+                        {{ game.homeName }}
+                    </div>
+                    <div class="col" ng-show="showGameLine(game)">
+                        {{ getGameLine(game) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ion-content>
+</ion-view>

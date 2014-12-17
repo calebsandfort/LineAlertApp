@@ -8,7 +8,8 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
     .constant("LeaguesEnum",
     {
         NBA: { value: 1, display: "NBA" },
-        NFL: { value: 2, display: "NFL" }
+        NFL: { value: 2, display: "NFL" },
+        NHL: { value: 3, display: "NHL" }
     })
     .constant("LogMessageTypes",
     {
@@ -82,6 +83,39 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
         {identifier: 58, name: "Tampa Bay Buccaneers"},
         {identifier: 42, name: "Tennessee Titans"},
         {identifier: 50, name: "Washington Redskins"}
+    ])
+    .constant("NhlTeams",
+    [
+        {identifier: 116, name: "Anaheim Ducks"},
+        {identifier: 93, name: "Boston Bruins"},
+        {identifier: 94, name: "Buffalo Sabres"},
+        {identifier: 117, name: "Calgary Flames"},
+        {identifier: 101, name: "Carolina Hurricanes"},
+        {identifier: 109, name: "Chicago Blackhawks"},
+        {identifier: 110, name: "Colorado Avalanche"},
+        {identifier: 102, name: "Columbus Blue Jackets"},
+        {identifier: 111, name: "Dallas Stars"},
+        {identifier: 95, name: "Detroit Red Wings"},
+        {identifier: 118, name: "Edmonton Oilers"},
+        {identifier: 96, name: "Florida Panthers"},
+        {identifier: 119, name: "Los Angeles Kings"},
+        {identifier: 112, name: "Minnesota Wild"},
+        {identifier: 97, name: "Montreal Canadiens"},
+        {identifier: 113, name: "Nashville Predators"},
+        {identifier: 103, name: "New Jersey Devils"},
+        {identifier: 104, name: "New York Islanders"},
+        {identifier: 105, name: "New York Rangers"},
+        {identifier: 98, name: "Ottawa Senators"},
+        {identifier: 106, name: "Philadelphia Flyers"},
+        {identifier: 120, name: "Phoenix Coyotes"},
+        {identifier: 107, name: "Pittsburgh Penguins"},
+        {identifier: 121, name: "San Jose Sharks"},
+        {identifier: 114, name: "St. Louis Blues"},
+        {identifier: 99, name: "Tampa Bay Lightning"},
+        {identifier: 100, name: "Toronto Maple Leafs"},
+        {identifier: 122, name: "Vancouver Canucks"},
+        {identifier: 108, name: "Washington Capitals"},
+        {identifier: 115, name: "Winnipeg Jets"}
     ])
     .constant("SportsBooks",
     {
@@ -162,6 +196,32 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
                 url: "/preferences",
                 templateUrl: "partials/preferences.html",
                 controller: "preferencesController"
+            })
+            .state('app.nhl', {
+                abstract: true,
+                url: "/nhl",
+                views: {
+                    'mainContent' :{
+                        template: '<ion-nav-view></ion-nav-view>'
+                    }
+                }
+            })
+            .state('app.nhl.games', {
+                url: "",
+                templateUrl: "partials/nhl.html",
+                controller: "nhlController"
+            })
+            .state('app.nhl.game', {
+                url: "/:identifier",
+                templateUrl: "partials/game.html",
+                controller: "gameController",
+                resolve: {
+                    game: function($stateParams, NhlService, LeaguesEnum) {
+                        var g = NhlService.getGame($stateParams.identifier);
+                        g.league = LeaguesEnum.NHL.value;
+                        return g;
+                    }
+                }
             })
 
         $urlRouterProvider.otherwise("/app/nba");
@@ -245,6 +305,7 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
             RefreshService.setLastMasterRefreshDate(setRefresh);
             RefreshService.setLastNbaRefreshDate(secondAgo);
             RefreshService.setLastNflRefreshDate(secondAgo);
+            RefreshService.setLastNhlRefreshDate(secondAgo);
 
             var refreshInterval = $interval(function(){
                 RefreshService.setLastMasterRefreshDate(moment());
