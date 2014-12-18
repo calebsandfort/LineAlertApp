@@ -197,6 +197,10 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
                 templateUrl: "partials/preferences.html",
                 controller: "preferencesController"
             })
+            .state('app.misc.welcome', {
+                url: "/welcome",
+                templateUrl: "partials/welcome.html"
+            })
             .state('app.nhl', {
                 abstract: true,
                 url: "/nhl",
@@ -276,16 +280,16 @@ angular.module('lineAlertApp', ['ionic', 'angularMoment', 'lineAlertAppServices'
             }
 
             if(!$cordovaDevice.deviceExists()){
-                UserService.get("development", false).then(function(user){
-                        $rootScope.$broadcast('userUpdated', user);
+                UserService.get("development", false).then(function(retVal){
+                    $rootScope.$broadcast('userUpdated', retVal);
                     },
                     function(e){
 
                     });
             }
             else{
-                UserService.get($cordovaDevice.getUUID(), false).then(function(user){
-                        $rootScope.$broadcast('userUpdated', user);
+                UserService.get($cordovaDevice.getUUID(), false).then(function (retVal) {
+                    $rootScope.$broadcast('userUpdated', retVal);
 
                         if(typeof (window.plugins) != "undefined" && typeof (window.plugins.pushNotification) != "undefined" && window.plugins.pushNotification){
                             PushReceiverService.register("822489992888");

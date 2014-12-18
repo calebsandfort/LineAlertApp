@@ -105,8 +105,14 @@ lineAlertAppControllers.controller('globalController', function ($scope, $filter
                 }
         });
 
-        $scope.$on('userUpdated', function(event, u) {
-                $scope.user = u;
+        $scope.$on('userUpdated', function (event, retVal) {
+            $timeout(function () {
+                $scope.user = retVal.user;
+
+                if (retVal.showWelcome) {
+                    $state.go("app.misc.welcome");
+                }
+            });
                 //$scope.$apply();
         });
 
@@ -320,7 +326,6 @@ lineAlertAppControllers.controller('nhlController', function ($scope, $filter, $
                 });
         });
 });
-
 
 lineAlertAppControllers.controller('nflController', function ($scope, $state, $timeout, $cordovaToast, $filter, $ionicLoading, NflService, RefreshService) {
         $scope.teams = new Array();

@@ -155,10 +155,11 @@ lineAlertAppServices.factory('UserService', ['$q', 'UserApiService',
                 }
 
                 var performGetUser = true;
+                var showWelcome = false;
 
                 if(userMasterSet){
                     performGetUser = false;
-                    q.resolve(userMaster);
+                    q.resolve({ user: userMaster, showWelcome: showWelcome });
                 }
 
                 if(!refresh && !userMasterSet) {
@@ -170,7 +171,10 @@ lineAlertAppServices.factory('UserService', ['$q', 'UserApiService',
                         performGetUser = false;
                         userMaster = userFromStorage;
                         userMasterSet = true;
-                        q.resolve(userMaster);
+                        q.resolve({ user: userMaster, showWelcome: showWelcome });
+                    }
+                    else {
+                        showWelcome = true;
                     }
                 }
 
@@ -193,7 +197,7 @@ lineAlertAppServices.factory('UserService', ['$q', 'UserApiService',
 
                         userMasterSet = true
 
-                        q.resolve(userMaster)
+                        q.resolve({ user: userMaster, showWelcome: showWelcome })
                     }, function(e){
                         q.reject(e);
                     });

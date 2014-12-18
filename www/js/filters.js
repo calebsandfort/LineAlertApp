@@ -19,3 +19,34 @@ lineAlertAppFilters.filter("line", function(){
         }
     }
 });
+
+lineAlertAppFilters.filter("nflWeekNumber", function () {
+    return function (num) {
+        if (isNaN(num)) {
+            return "";
+        }
+        else if (num > 17) {
+            switch (num) {
+                case 18:
+                    return "Wild-Card Round";
+                    break;
+                case 19:
+                    return "Divisional Round";
+                    break;
+                case 20:
+                    return "Championship Round";
+                    break;
+                case 21:
+                case 22:
+                    return "Super Bowl";
+                    break;
+                default:
+                    return "";
+                    break;
+            }
+        }
+        else {
+            return  "Week " + num;
+        }
+    }
+});
